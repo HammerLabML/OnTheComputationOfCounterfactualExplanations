@@ -77,7 +77,7 @@ class SDP(ABC):
         constraints += [cp.bmat([[X, x], [x.T, one]]) >> 0]
 
         # Build the final program
-        f = cp.Minimize(cp.trace(I @ X) + x.T @ x_orig)
+        f = cp.Minimize(cp.trace(I @ X) - 2. * x.T @ x_orig)
         prob = cp.Problem(f, constraints)
         
         # Solve it!
