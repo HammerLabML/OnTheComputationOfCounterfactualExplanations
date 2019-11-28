@@ -26,9 +26,10 @@ class GaussianNaiveBayes(Counterfactual, SDP):
         i = y
         j = 0 if y == 1 else 1
 
-        A = np.diag(1. / (2. * self.sigmasq[i])) - np.diag(1. / (2. * self.sigmasq[j]))
+        A = np.diag(-1. / (2. * self.sigmasq[j, :])) + np.diag(1. / (2. * self.sigmasq[i, :]))
         b = (self.mu[j, :] / self.sigmasq[j, :]) - (self.mu[i, :] / self.sigmasq[i, :])
-        c = np.log(self.pi[j] / self.pi[i]) + np.sum([np.log(np.sqrt(2*np.pi*self.sigmasq[i, k]) / np.sqrt(2*np.pi*self.sigmasq[j, k])) - (self.mu[j,k] / (2. * self.sigmasq[j,k])) + (self.mu[i,k] / (2. * self.mu[i,k])) for k in range(self.dim)])
+        c = np.log(self.pi[j] / self.pi[i]) + np.sum([np.log(1. / np.sqrt(2.*np.pi*self.sigmasq[j,k])) - ((self.mu[j,k]**2) / (2.*self.sigmasq[j,k])) for k in range(self.dim)]) - np.sum([np.log(1. / np.sqrt(2.*np.pi*self.sigmasq[i,k])) - ((self.mu[i,k]**2) / (2.*self.sigmasq[i,k])) for k in range(self.dim)])
+
         return [cp.trace(A @ var_X) + var_x.T @ b + c <= 0]
 
     def _prepare_qcqp(self, x_orig, y_target, mad=None):
@@ -47,8 +48,8 @@ class GaussianNaiveBayes(Counterfactual, SDP):
             A0_i.append(np.diag(1. / (2. * self.sigmasq[i, :])))
             A1_i.append(np.diag(1. / (2. * self.sigmasq[j, :])))
             b_i.append((self.mu[j, :] / self.sigmasq[j, :]) - (self.mu[i, :] / self.sigmasq[i, :]))
-            r_i.append(np.log(self.pi[j] / self.pi[i]) + np.sum([np.log(np.sqrt(2*np.pi*self.sigmasq[i, k]) / np.sqrt(2*np.pi*self.sigmasq[j, k])) - (self.mu[j,k] / (2. * self.sigmasq[j,k])) + (self.mu[i,k] / (2. * self.mu[i,k])) for k in range(self.dim)]))
-        
+            r_i.append(np.log(self.pi[j] / self.pi[i]) + np.sum([np.log(1. / np.sqrt(2.*np.pi*self.sigmasq[j,k])) - ((self.mu[j,k]**2) / (2.*self.sigmasq[j,k])) for k in range(self.dim)]) - np.sum([np.log(1. / np.sqrt(2.*np.pi*self.sigmasq[i,k])) - ((self.mu[i,k]**2) / (2.*self.sigmasq[i,k])) for k in range(self.dim)]))
+
         return PenaltyConvexConcaveProcedure(self.model, Q0, Q1, q, c, A0_i, A1_i, b_i, r_i, mad)
     
     def compute_counterfactual(self, x, y, mad=None):
