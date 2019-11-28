@@ -26,8 +26,8 @@ class QDA(Counterfactual, SDP):
         i = y
         j = 0 if y == 1 else 1
 
-        A = self.sigma_inv[i] - self.sigma_inv[j]
-        b = np.dot(self.sigma_inv[j], self.mu[j]) - np.dot(self.sigma_inv[i], self.mu[j])
+        A = .5 * (self.sigma_inv[i] - self.sigma_inv[j])
+        b = np.dot(self.sigma_inv[j], self.mu[j]) - np.dot(self.sigma_inv[i], self.mu[i])
         c = np.log(self.pi[j] / self.pi[i]) + 0.5 * np.log(np.linalg.det(self.sigma_inv[j]) / np.linalg.det(self.sigma_inv[i])) + 0.5 * (self.mu[i].T.dot(self.sigma_inv[i]).dot(self.mu[i]) - self.mu[j].T.dot(self.sigma_inv[j]).dot(self.mu[j]))
         return [cp.trace(A @ var_X) + var_x.T @ b + c <= 0]
 
