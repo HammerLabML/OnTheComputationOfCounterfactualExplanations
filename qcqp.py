@@ -88,7 +88,7 @@ class PenaltyConvexConcaveProcedure():
         cur_tao = tao
 
         # Solve a bunch of CCPs
-        while tao < tao_max:
+        while cur_tao < tao_max:
             xcf_ = self.solve_aux(xcf, cur_tao, x_orig)
 
             if y_target == self.model.predict([xcf_])[0]:
