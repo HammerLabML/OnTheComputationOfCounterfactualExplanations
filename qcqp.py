@@ -93,8 +93,6 @@ class PenaltyConvexConcaveProcedure():
 
             if y_target == self.model.predict([xcf_])[0]:
                 xcf = xcf_
-            else:
-                break
 
             # Increase penalty parameter
             cur_tao *= mu
